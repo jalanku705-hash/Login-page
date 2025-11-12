@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ujian Aman - SMPN 1 Batang Batang</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #0a3d91, #2e86de);
+      color: white;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: all 0.5s ease-in-out;
+    }
+
+    img.logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 3px solid white;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    input#token {
+      text-transform: uppercase;
+    }
+
+    button {
+      background-color: #ffcc00;
+      color: #000;
+      font-weight: bold;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #ffdb4d;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    /* --- UJIAN MODE --- */
+    #ujianFrame {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10;
+    }
+
+    #exitBtn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;" onkeydown="return disableKeys(event)">
+  <div class="container" id="login-container">
+    <img src="logo.png" alt="Logo Sekolah" class="logo">
+    <h2>Login Ujian Aman</h2>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <input type="text" id="nama" placeholder="Masukkan Nama Lengkap" required>
+      <input type="text" id="token" placeholder="Masukkan Token" required>
+      <button type="submit">MASUK UJIAN</button>
+    </form>
+
+    <footer>© SMP Negeri 1 Batang Batang - Sumenep</footer>
+  </div>
+
+  <iframe id="ujianFrame"></iframe>
+  <button id="exitBtn" onclick="keluarUjian()">KELUAR UJIAN</button>
+
+  <script>
+    const VALID_TOKEN = "SUMATIF";
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe-1ZUyc_o6G3pjPtz5UcFNJLJW4DSGKajNnkzMIC-OQ2Sd3Q/viewform?usp=publish-editor";
+
+    // Otomatis ubah token ke huruf besar
+    document.getElementById('token').addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+    });
+
+    // Nonaktifkan tombol tertentu
+    function disableKeys(e) {
+      if ((e.ctrlKey && e.key === 'r') || e.key === 'F5' || e.key === 'F11') {
+        e.preventDefault();
+        alert("❌ Tombol ini dinonaktifkan selama ujian!");
+        return false;
+      }
+    }
+
+    // Masuk mode fullscreen
+    function openFullScreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+
+    // Keluar mode fullscreen
+    function closeFullScreen() {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.msExitFullscreen) document.msExitFullscreen();
+    }
+
+    // Login
+    function handleLogin(event) {
+      event.preventDefault();
+      const nama = document.getElementById('nama').value.trim();
+      const token = document.getElementById('token').value.trim();
+
+      if (!nama) {
+        alert("Nama tidak boleh kosong!");
+        return;
+      }
+      if (token !== VALID_TOKEN) {
+        alert("Token salah! Silakan periksa kembali.");
+        return;
+      }
+
+      // Ubah tampilan jadi ujian
+      document.getElementById('login-container').style.display = 'none';
+      const frame = document.getElementById('ujianFrame');
+      const exitBtn = document.getElementById('exitBtn');
+      frame.src = FORM_URL + '?usp=pp_url&entry.123456789=' + encodeURIComponent(nama);
+      frame.style.display = 'block';
+      exitBtn.style.display = 'block';
+      openFullScreen();
+
+      alert("✅ Login berhasil! Selamat mengerjakan ujian.");
+    }
+
+    // Tombol keluar ujian
+    function keluarUjian() {
+      if (confirm("Apakah kamu yakin ingin keluar dari ujian?")) {
+        closeFullScreen();
+        document.getElementById('ujianFrame').style.display = 'none';
+        document.getElementById('exitBtn').style.display = 'none';
+        document.getElementById('login-container').style.display = 'block';
+        document.getElementById('loginForm').reset();
+      }
+    }
+  </script>
+</body>
+</html>
